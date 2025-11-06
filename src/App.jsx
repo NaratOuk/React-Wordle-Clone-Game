@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import Board from './components/Board';
 import Keyboard from './components/Keyboard';
@@ -20,36 +20,19 @@ function App() {
     setSolution(getRandomWord());
   }, []);
 
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (gameOver) return;
-
-      if (e.key === 'Enter') {
-        handleSubmit();
-      } else if (e.key === 'Backspace') {
-        handleDelete();
-      } else if (/^[a-zA-Z]$/.test(e.key)) {
-        handleKeyPress(e.key.toUpperCase());
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentGuess, currentAttempt, gameOver]);
-
-  const handleKeyPress = (key) => {
+  const handleKeyPress = useCallback((key) => {
     if (currentGuess.length < WORD_LENGTH) {
       setCurrentGuess(prev => prev + key);
       setInvalidWord(false);
     }
-  };
+  }, [currentGuess.length]);
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     setCurrentGuess(prev => prev.slice(0, -1));
     setInvalidWord(false);
-  };
+  }, []);
 
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     if (currentGuess.length !== WORD_LENGTH) return;
 
     if (!isValidWord(currentGuess)) {
@@ -75,7 +58,24 @@ function App() {
 
     setCurrentAttempt(prev => prev + 1);
     setCurrentGuess('');
-  };
+  }, [currentGuess, currentAttempt, guesses, solution]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (gameOver) return;
+
+      if (e.key === 'Enter') {
+        handleSubmit();
+      } else if (e.key === 'Backspace') {
+        handleDelete();
+      } else if (/^[a-zA-Z]$/.test(e.key)) {
+        handleKeyPress(e.key.toUpperCase());
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [gameOver, handleSubmit, handleDelete, handleKeyPress]);
 
   const resetGame = () => {
     setSolution(getRandomWord());
@@ -87,27 +87,54 @@ function App() {
     setInvalidWord(false);
   };
 
-  const getLetterStates = () => {
+  const getLetterStates = useCallback(() => {
     const states = {};
     
     guesses.forEach((guess, index) => {
       if (guess && index < currentAttempt) {
-        for (let i = 0; i < guess.length; i++) {
-          const letter = guess[i];
+        const solutionLetters = solution.split('');
+        const guessLetters = guess.split('');
+        
+        // First pass: mark correct letters
+        const letterStates = [];
+        for (let i = 0; i < guessLetters.length; i++) {
+          if (guessLetters[i] === solutionLetters[i]) {
+            letterStates[i] = 'correct';
+            solutionLetters[i] = null;
+          }
+        }
+        
+        // Second pass: mark present letters
+        for (let i = 0; i < guessLetters.length; i++) {
+          if (letterStates[i] !== 'correct') {
+            const letter = guessLetters[i];
+            const solutionIndex = solutionLetters.indexOf(letter);
+            if (solutionIndex !== -1) {
+              letterStates[i] = 'present';
+              solutionLetters[solutionIndex] = null;
+            } else {
+              letterStates[i] = 'absent';
+            }
+          }
+        }
+        
+        // Update keyboard states (prioritize: correct > present > absent)
+        for (let i = 0; i < guessLetters.length; i++) {
+          const letter = guessLetters[i];
+          const currentState = states[letter];
+          const newState = letterStates[i];
           
-          if (solution[i] === letter) {
-            states[letter] = 'correct';
-          } else if (solution.includes(letter) && states[letter] !== 'correct') {
-            states[letter] = 'present';
-          } else if (!states[letter]) {
-            states[letter] = 'absent';
+          if (!currentState || 
+              (currentState === 'absent' && newState !== 'absent') ||
+              (currentState === 'present' && newState === 'correct')) {
+            states[letter] = newState;
           }
         }
       }
     });
 
     return states;
-  };
+  }, [guesses, currentAttempt, solution]);
 
   return (
     <div className="App">

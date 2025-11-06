@@ -4,19 +4,38 @@ import Cell from './Cell';
 function Row({ guess, solution, isSubmitted, isInvalid }) {
   const cells = [];
   
-  for (let i = 0; i < 5; i++) {
-    const letter = guess[i] || '';
-    let state = '';
+  // Calculate letter states correctly handling duplicates
+  const letterStates = [];
+  if (isSubmitted) {
+    const solutionLetters = solution.split('');
+    const guessLetters = guess.split('');
     
-    if (isSubmitted && letter) {
-      if (solution[i] === letter) {
-        state = 'correct';
-      } else if (solution.includes(letter)) {
-        state = 'present';
-      } else {
-        state = 'absent';
+    // First pass: mark correct letters
+    for (let i = 0; i < 5; i++) {
+      if (guessLetters[i] === solutionLetters[i]) {
+        letterStates[i] = 'correct';
+        solutionLetters[i] = null; // Mark as used
       }
     }
+    
+    // Second pass: mark present letters
+    for (let i = 0; i < 5; i++) {
+      if (letterStates[i] !== 'correct') {
+        const letter = guessLetters[i];
+        const index = solutionLetters.indexOf(letter);
+        if (index !== -1) {
+          letterStates[i] = 'present';
+          solutionLetters[index] = null; // Mark as used
+        } else {
+          letterStates[i] = 'absent';
+        }
+      }
+    }
+  }
+  
+  for (let i = 0; i < 5; i++) {
+    const letter = guess[i] || '';
+    const state = isSubmitted && letter ? letterStates[i] : '';
     
     cells.push(
       <Cell
