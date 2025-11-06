@@ -1,0 +1,77 @@
+.cell {
+  width: 62px;
+  height: 62px;
+  border: 2px solid #3a3a3c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.cell.filled {
+  border-color: #565758;
+  animation: pop 0.1s ease-in-out;
+}
+
+.cell.correct {
+  background-color: #6aaa64;
+  border-color: #6aaa64;
+  animation: flip 0.5s ease;
+}
+
+.cell.present {
+  background-color: #c9b458;
+  border-color: #c9b458;
+  animation: flip 0.5s ease;
+}
+
+.cell.absent {
+  background-color: #3a3a3c;
+  border-color: #3a3a3c;
+  animation: flip 0.5s ease;
+}
+
+.cell.invalid {
+  animation: shake 0.5s ease;
+  border-color: #ff0000;
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes flip {
+  0% {
+    transform: rotateX(0);
+  }
+  50% {
+    transform: rotateX(90deg);
+  }
+  100% {
+    transform: rotateX(0);
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px);
+  }
+}
