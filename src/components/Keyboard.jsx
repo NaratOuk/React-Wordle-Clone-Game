@@ -33,6 +33,7 @@ function Keyboard({ onKeyPress, onDelete, onSubmit, letterStates, disabled }) {
                 className={`key ${state} ${isSpecial ? 'special' : ''}`}
                 onClick={() => handleClick(key)}
                 disabled={disabled}
+                aria-label={key === '⌫' ? 'Delete' : key === 'ENTER' ? 'Enter' : key}
               >
                 {key}
               </button>

@@ -152,12 +152,12 @@ function App() {
         />
         
         {gameOver && (
-          <div className="game-over">
+          <div className="game-over" role="dialog" aria-modal="true" aria-labelledby="game-result">
             <div className="game-over-message">
               {gameWon ? (
-                <p className="win-message">🎉 Congratulations! You won!</p>
+                <p id="game-result" className="win-message">🎉 Congratulations! You won!</p>
               ) : (
-                <p className="lose-message">
+                <p id="game-result" className="lose-message">
                   Game Over! The word was <strong>{solution}</strong>
                 </p>
               )}
