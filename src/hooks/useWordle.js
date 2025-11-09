@@ -23,7 +23,23 @@ const useWordle = () => {
 
     //handle a keyup event and track current guess
     //if user presses enter, add the new guess
-    const handleKeyup = () => {
+    const handleKeyup = ({ key }) => {
+
+    if (key === 'Backspace'){
+        setCurrentGuess ((prev) => {
+            return prev.slice(0, -1)
+        })
+        return
+    }
+
+    if (/^[A-Za-z]$/.test(key)){
+        if(currentGuess.length < 5){
+                setCurrentGuess ((prev)=> {
+                    return prev + key 
+                })
+        }
+
+    }
 
     }
     // we dont it to call those 2(formatGuess, addNewGuess) functions outside of the hook
